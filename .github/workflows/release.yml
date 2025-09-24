@@ -1,0 +1,78 @@
+name: Semantic Release
+
+on:
+  push:
+    branches:
+      - 'release'
+    
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to be able to publish a GitHub release
+      issues: write # to be able to comment on released issues
+      pull-requests: write # to be able to comment on released pull requests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install dependencies
+        run: >
+          npm install -g
+          semantic-release
+          @semantic-release/commit-analyzer
+          @semantic-release/release-notes-generator
+          @semantic-release/git
+          @semantic-release/github
+      - name: Run Semantic-Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
+  get_tag:
+    runs-on: ubuntu-latest
+    needs: release
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.get_tag.outputs.tag }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - id: get_tag
+        run: |
+         tag=$(git describe --tags)
+         echo "tag=$tag" >> $GITHUB_OUTPUT
+
+  # Helm Chart
+  scan_helm:
+    uses: dBildungsplattform/dbp-github-workflows/.github/workflows/check-helm-kics.yaml@5
+    permissions:
+      contents: read
+
+  release_helm:
+    concurrency:
+      group: helm_release
+      cancel-in-progress: false
+    needs:
+     - scan_helm
+     - get_tag
+    uses: dBildungsplattform/dbp-github-workflows/.github/workflows/chart-release.yaml@7
+    secrets: inherit
+    with:
+      chart_name: "mailpit"
+      chart_path: "./charts"
+      helm_chart_version_generation: specified 
+      image_tag_generation: specified 
+      helm_chart_version: ${{ needs.get_tag.outputs.tag }}
+      image_tag: ${{ needs.get_tag.outputs.tag }}

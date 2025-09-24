@@ -1,0 +1,69 @@
+name: Dev Build and Release
+
+on:
+  push:
+    branches-ignore:
+      - 'release'
+
+jobs:
+  branch_meta:
+    runs-on: ubuntu-latest
+    outputs:
+      branch: ${{ steps.extract_branch_meta.outputs.branch }}
+      sha: ${{ steps.extract_branch_meta.outputs.sha }}
+    steps:
+      - name: Extract branch meta
+        shell: bash
+        id: extract_branch_meta
+        env:
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BRANCH_REF_NAME: ${{ github.ref_name}}
+          BRANCH_SHA: ${{ github.sha }}
+        run: |
+          if [ "${{ github.event_name }}" == 'pull_request' ]; then
+            echo "branch=$PR_HEAD_REF" >> $GITHUB_OUTPUT
+            echo "sha=$PR_HEAD_SHA" >> $GITHUB_OUTPUT
+          else
+            echo "branch=$BRANCH_REF_NAME" >> $GITHUB_OUTPUT
+            echo "sha=$BRANCH_SHA" >> $GITHUB_OUTPUT
+          fi
+  
+  scan:
+    uses: dBildungsplattform/dbp-github-workflows/.github/workflows/check-helm-kics.yaml@5
+    permissions:
+      contents: read
+  
+  helm_release_sha:
+    concurrency:
+      group: helm_release
+      cancel-in-progress: false
+    needs: 
+      - scan
+      - branch_meta
+    uses: dBildungsplattform/dbp-github-workflows/.github/workflows/chart-release.yaml@7
+    secrets: inherit
+    with:
+      chart_name: "mailpit"
+      chart_path: "./charts"
+      helm_chart_version_generation: specified
+      image_tag_generation: specified
+      helm_chart_version: "0.0.1-${{ needs.branch_meta.outputs.sha }}"
+      image_tag: ${{ needs.branch_meta.outputs.sha }}
+
+  helm_release_branch:
+    concurrency:
+      group: helm_release
+      cancel-in-progress: false
+    needs: 
+      - scan
+      - branch_meta
+    uses: dBildungsplattform/dbp-github-workflows/.github/workflows/chart-release.yaml@7
+    secrets: inherit
+    with:
+      chart_name: "mailpit"
+      chart_path: "./charts"
+      helm_chart_version_generation: specified
+      image_tag_generation: specified
+      helm_chart_version: "0.0.1-${{ needs.branch_meta.outputs.branch }}"
+      image_tag: ${{ needs.branch_meta.outputs.branch }}
