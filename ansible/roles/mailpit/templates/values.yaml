@@ -1,0 +1,141 @@
+image:
+  # repository is used to set the image repository for the container
+  repository: "{{ mailpit_image_repository }}"
+  # pullPolicy defines the image pull policy
+  pullPolicy: "{{ mailpit_image_pull_policy }}"
+  # tag overrides the image tag that is the chart's appVersion by default
+  tag: "{{ mailpit_image_tag }}"
+
+# imagePullSecrets specifies secrets for pulling images from private repositories
+imagePullSecrets:
+{% for item in mailpit_image_pull_secrets %}
+  - {{ item }}
+{% endfor %}
+# nameOverride overrides the chart name
+# fullnameOverride overrides the full chart name
+# namespaceOverride allows overriding the namespace for the deployment
+
+auth:
+  # ui defines the UI authentication configuration
+  # Each entry in the list represents a user with username and password
+  ui:
+    {{ mailpit_auth_ui | to_nice_yaml | indent(4) | trim }}
+    # - username: ""
+    #   password: ""
+  # api defines the API authentication configuration
+  # Each entry in the list represents a user with username and password
+  api:
+    {{ mailpit_auth_api | to_nice_yaml | indent(4) | trim }}
+  # smtp defines the SMTP authentication configuration
+  # Each entry in the list represents a user with username and password
+  smtp:
+    {{ mailpit_auth_smtp | to_nice_yaml | indent(4) | trim }}
+  # pop3 defines the POP3 authentication configuration
+  # Each entry in the list represents a user with username and password
+  pop3:
+    {{ mailpit_auth_pop3 | to_nice_yaml | indent(4) | trim }}
+  # existingSecret allows using an existing secret for authentication
+  # If set, the chart will not create a new secret.
+  # The secret must contain the following keys:
+  # - ui.htpasswd
+  # - smtp.htpasswd
+  # - pop3.htpasswd
+  # - api.htpasswd
+  existingSecret: "{{ mailpit_auth_existing_secret }}"
+  smtpAuthAcceptAny: {{ mailpit_auth_smtp_auth_accept_any }}
+  smtpAuthAllowInsecure: {{ mailpit_auth_smtp_auth_allow_insecure }}
+
+mailpit:
+  maxMessages: {{ mailpit_mailpit_max_messages }}
+  # maxAge sets the maximum age of messages to store in either (h)ours or (d)ays.
+  # Mailpit will periodically delete the oldest messages if greater than this.
+  # The value must be either in hours (eg: --max-age 36h) or days (eg: --max-age 14d) (see docs).
+  maxAge: "{{ mailpit_mailpit_max_age }}"
+  # disableWAL disables Write-Ahead Logging (WAL) support for local database.
+  # WAL (enabled by default) provides better performance,
+  # however is not compatible with network file systems such as NFS or Samba.
+  # Set this option if you intend to use persistent storage on a network volume.
+  disableWAL: {{ mailpit_mailpit_disable_wal }}
+  disableVersionCheck: {{ mailpit_mailpit_disable_version_check }}
+  # Path to add for root on the mailpid container
+  httpRootPath: "{{ mailpit_mailpit_http_root_path }}"
+
+
+# serviceAccount defines the service account configuration
+serviceAccount:
+  # create specifies whether a service account should be created
+  create: {{ mailpit_service_account_create }}
+  # automount determines if the ServiceAccount's API credentials are automatically mounted
+  automount: {{ mailpit_service_account_automount }}
+  # annotations adds annotations to the service account
+  annotations:
+    {{ mailpit_service_account_annotations | to_nice_yaml | indent(4) | trim }}
+  # name specifies the name of the service account to use
+  # If not set, the chart will create a default service account
+  name: "{{ mailpit_service_account_name }}"
+
+# podAnnotations adds Kubernetes annotations to the Pod
+podAnnotations:
+  {{ mailpit_pod_annotations | to_nice_yaml | indent(2) | trim }}
+# podLabels adds Kubernetes labels to the Pod
+podLabels:
+  {{ mailpit_pod_labels | to_nice_yaml | indent(2) | trim }}
+
+
+# ingress defines the ingress configuration
+ingress:
+  # enabled specifies whether ingress is enabled
+  enabled: {{ mailpit_ingress_enabled }}
+  # className specifies the ingress class name
+  className: "{{ mailpit_ingress_class_name }}"
+  # host is the hostname for the ingress
+  host: "{{ mailpit_ingress_host }}"
+  # annotations adds annotations to the ingress
+  annotations:
+    {{ mailpit_ingress_annotations | to_nice_yaml | indent(4) | trim }}
+  # tls defines the TLS configuration for the ingress
+  tls:
+    # enabled specifies whether TLS is enabled
+    enabled: {{ mailpit_ingress_tls_enabled }}
+    # secretName specifies the secret name for TLS
+    secretName: "{{ mailpit_ingress_tls_secret_name }}"
+  path: "{{ mailpit_ingress_path }}"
+
+# resources defines resource requests and limits for the container
+resources:
+  # requests specifies the resource requests for the container
+  requests:
+    cpu: "{{ mailpit_resources_requests_cpu }}"
+    memory: "{{ mailpit_resources_requests_memory }}"
+  # limits specifies the resource limits for the container
+  limits:
+    cpu: "{{ mailpit_resources_limits_cpu }}"
+    memory: "{{ mailpit_resources_limits_memory }}"
+
+# livenessProbe configures the liveness probe
+livenessProbe:
+  # httpGet defines the HTTP GET configuration for the liveness probe
+  initialDelaySeconds: {{ mailpit_liveness_probe_initial_delay_seconds }}
+  periodSeconds: {{ mailpit_liveness_probe_period_seconds }}
+  timeoutSeconds: {{ mailpit_liveness_probe_timeout_seconds }}
+  failureThreshold: {{ mailpit_liveness_probe_failure_threshold }}
+  httpGet:
+    path: {{ mailpit_liveness_probe_path }}
+
+# readinessProbe configures the readiness probe
+readinessProbe:
+  # httpGet defines the HTTP GET configuration for the readiness probe
+  initialDelaySeconds: {{ mailpit_readiness_probe_initial_delay_seconds }}
+  periodSeconds: {{ mailpit_readiness_probe_period_seconds }}
+  timeoutSeconds: {{ mailpit_readiness_probe_timeout_seconds }}
+  failureThreshold: {{ mailpit_readiness_probe_failure_threshold }}
+  httpGet:
+    path: {{ mailpit_readiness_probe_path }}
+
+# storage configures persistent storage
+storage:
+  enabled: {{ mailpit_storage_enabled }}
+  # className specifies the storage class name for the persistent volume claim
+  className: "{{ mailpit_storage_class_name }}"
+  # size specifies the size of the persistent volume claim
+  size: "{{ mailpit_storage_size }}"

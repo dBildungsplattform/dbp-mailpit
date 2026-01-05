@@ -1,0 +1,21 @@
+- name: "Import asserts"
+  ansible.builtin.import_tasks: "assert.yaml"
+
+- name: "Add helm repo: {{ mailpit_chart_repo_name }}"
+  kubernetes.core.helm_repository:
+    name: "{{ mailpit_chart_repo_name }}"
+    repo_url: "{{ mailpit_chart_repo_url }}"
+  when: "'oci' not in mailpit_chart_ref"
+
+- name: "Deploy mailpit"
+  delegate_to: localhost
+  kubernetes.core.helm:
+    chart_ref: "{{ mailpit_chart_ref }}"
+    chart_version: "{{ mailpit_chart_version }}"
+    release_name: "{{ mailpit_release_name }}"
+    release_namespace: "{{ mailpit_namespace }}"
+    release_state: "{{ mailpit_state }}"
+    create_namespace: "{{ mailpit_create_namespace }}"
+    kubeconfig: "{{ kubeconfig | default(omit) }}"
+    update_repo_cache: false
+    values: "{{ lookup('template', 'values.yaml') | from_yaml }}"
