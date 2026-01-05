@@ -1,0 +1,64 @@
+mailpit_namespace: "mailpit"
+mailpit_create_namespace: true
+mailpit_release_name: "mailpit"
+mailpit_chart_ref: "oci://ghcr.io/dbildungsplattform/infra-enrichment/mailpit"
+mailpit_chart_version: ""
+mailpit_chart_repo_url: "ghcr.io/dbildungsplattform/infra-enrichment"
+mailpit_chart_repo_name: "infra-enrichment"
+mailpit_state: "present"
+
+mailpit_image_repository: "axllent/mailpit"
+mailpit_image_pull_policy: "Always"
+mailpit_image_tag: "latest"
+mailpit_image_pull_secrets: []
+
+mailpit_auth_ui: []
+mailpit_auth_api: []
+mailpit_auth_smtp: []
+mailpit_auth_pop3: []
+mailpit_auth_existing_secret: ""
+mailpit_auth_smtp_auth_accept_any: true
+mailpit_auth_smtp_auth_allow_insecure: true
+
+mailpit_mailpit_max_messages: 5000
+mailpit_mailpit_max_age: "30d"
+mailpit_mailpit_disable_wal: false
+mailpit_mailpit_disable_version_check: true
+mailpit_mailpit_http_root_path: ""
+
+mailpit_service_account_create: true
+mailpit_service_account_automount: false
+mailpit_service_account_annotations: {}
+mailpit_service_account_name: ""
+
+mailpit_pod_annotations: {}
+mailpit_pod_labels: {}
+
+mailpit_ingress_enabled: true
+mailpit_ingress_class_name: "nginx"
+mailpit_ingress_host: ""
+mailpit_ingress_annotations: {}
+mailpit_ingress_tls_enabled: true
+mailpit_ingress_tls_secret_name: "mailpit-tls"
+mailpit_ingress_path: "/"
+
+mailpit_resources_requests_cpu: "200m"
+mailpit_resources_requests_memory: "256Mi"
+mailpit_resources_limits_cpu: "2000m"
+mailpit_resources_limits_memory: "2Gi"
+
+mailpit_liveness_probe_initial_delay_seconds: 5
+mailpit_liveness_probe_period_seconds: 5
+mailpit_liveness_probe_timeout_seconds: 3
+mailpit_liveness_probe_failure_threshold: 7
+mailpit_liveness_probe_path: "/livez"
+
+mailpit_readiness_probe_initial_delay_seconds: 5
+mailpit_readiness_probe_period_seconds: 5
+mailpit_readiness_probe_timeout_seconds: 1
+mailpit_readiness_probe_failure_threshold: 3
+mailpit_readiness_probe_path: "/readyz"
+
+mailpit_storage_enabled: false
+mailpit_storage_class_name: ""
+mailpit_storage_size: "1Gi"
