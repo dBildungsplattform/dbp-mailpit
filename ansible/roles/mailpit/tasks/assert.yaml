@@ -4,8 +4,8 @@
   ansible.builtin.assert:
     quiet: true
     that:
-      - "mailpit_chart_version is string"
-      - "mailpit_chart_version | length > 0"
+      - "mailpit_c_use_helm_digest or mailpit_chart_version is string"
+      - "mailpit_c_use_helm_digest or mailpit_chart_version | length > 0"
       - "mailpit_release_name is string"
       - "mailpit_namespace is string"
       - "mailpit_namespace | length > 0"
