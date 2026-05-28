@@ -1,0 +1,1 @@
+mailpit_c_use_helm_digest: "{{ '@' in mailpit_chart_ref }}"

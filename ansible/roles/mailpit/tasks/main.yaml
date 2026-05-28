@@ -11,7 +11,8 @@
   delegate_to: localhost
   kubernetes.core.helm:
     chart_ref: "{{ mailpit_chart_ref }}"
-    chart_version: "{{ mailpit_chart_version }}"
+    # chart_version is only optional when using digests (see asserts.yaml)
+    chart_version: "{{ mailpit_chart_version | default(omit) }}"
     release_name: "{{ mailpit_release_name }}"
     release_namespace: "{{ mailpit_namespace }}"
     release_state: "{{ mailpit_state }}"
