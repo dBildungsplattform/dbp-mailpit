@@ -9,7 +9,7 @@ mailpit_state: "present"
 
 mailpit_image_repository: "axllent/mailpit"
 mailpit_image_pull_policy: "Always"
-mailpit_image_tag: "latest"
+mailpit_image_tag: "v1.30.0@sha256:0059ef81e492a7192af3816281eed6859eb078bd7bdc58b76757c13e10e53a7d"
 mailpit_image_pull_secrets: []
 
 mailpit_auth_ui: []
